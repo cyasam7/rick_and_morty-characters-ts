@@ -1,31 +1,32 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import csurf from "csurf";
+import cookieParser from "cookie-parser";
+import RouterLogin from "./routes/Auth";
+import RouterUserCharacter from "./routes/UserCharacter";
+
 import "./utils/db/Mongo";
-import { Router } from "express";
-import jwt from "jsonwebtoken";
+import "./utils/strategies/jwt";
 
-const app = express();
-
-/* Middlewares */
-app.use(morgan("combined"));
-app.use(cors());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-/* Routes */
-
-const router = Router();
-
-router.post("/data", () => {});
-router.post("/sign-in", (req: Request, res: Response) => {
-  const token = jwt.sign({ token: "1234" }, "hola banda");
-  res.cookie("token", token, { httpOnly: true });
-  res.json(token);
+const csrfProttection = csurf({
+  cookie: true,
 });
 
-export default router;
+/* App */
+const app = express();
+/* Middlewares */
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(cookieParser());
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+/* app.use(csrfProttection); */
 
-app.listen(3000, () => {
+/* Routes */
+RouterLogin(app);
+RouterUserCharacter(app);
+
+app.listen(3001, () => {
   console.log("se inicio adios");
 });
